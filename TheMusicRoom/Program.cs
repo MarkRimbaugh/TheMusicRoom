@@ -9,8 +9,8 @@ namespace TheMusicRoom
         static IConfigurationBuilder builder = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
         public static IConfigurationRoot _configuration = builder.Build();
-        public static readonly string _cnstr = _configuration["ConnectionStrings:MusicRoomDB"];
-        static DbContextOptionsBuilder _optionsBuilder = new DbContextOptionsBuilder<TheMusicRoomDBContext>().UseSqlServer(_cnstr).EnableSensitiveDataLogging();
+        public static readonly string _cnstr = _configuration["ConnectionStrings:TheMusicRoomDB"];
+        static DbContextOptionsBuilder _optionsBuilder = new DbContextOptionsBuilder<TheMusicRoomDBContext>().UseSqlServer(_cnstr);
 
         static void Main(string[] args)
         {
@@ -18,10 +18,10 @@ namespace TheMusicRoom
              .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             _configuration = builder.Build();
 
-            using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
+            /*using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
             {
                 context.Database.EnsureCreated();
-            }
+            }*/
         
             
 

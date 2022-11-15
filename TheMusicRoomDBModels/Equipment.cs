@@ -23,7 +23,6 @@ namespace TheMusicRoomDBModels
         public Condition Condition { get; set; }
 
         public virtual EquipmentType Type { get; set; }
-        public virtual Brand Brand { get; set; }
         public virtual Model Model { get; set; }
     }
 }

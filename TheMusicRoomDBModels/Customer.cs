@@ -25,5 +25,7 @@ namespace TheMusicRoomDBModels
         public virtual CustomerAddress Address { get; set; }
         public virtual CustomerPhone Phone { get; set; }
 
+        public virtual List<EquipmentRental> EquipmentRentals { get; set; } = new List<EquipmentRental>();
+
     }
 }
