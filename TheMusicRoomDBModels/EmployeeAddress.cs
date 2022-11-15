@@ -15,6 +15,8 @@ namespace TheMusicRoomDBModels
         public string Street { get; set; }
         [Required, StringLength(30)]
         public string City { get; set; }
+        [Required, StringLength(30)]
+        public string State { get; set; }
         [Required, DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:#####-####}")]
          public string Zip { get; set; }
 

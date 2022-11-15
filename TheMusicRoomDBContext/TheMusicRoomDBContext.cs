@@ -37,5 +37,73 @@ namespace TheMusicRoomDB
                 optionsBuilder.UseSqlServer(cnstr);
             }
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Customer>(x =>
+            {
+                x.HasData(
+                new Customer() { Id = 1, First = "Mark", Middle = "Evan", Last = "Rimbaugh", AddressId = 1, PhoneId = 1 }
+                );
+            });
+
+            modelBuilder.Entity<CustomerAddress>(x =>
+            {
+                x.HasData(
+                    new CustomerAddress() { Id = 1, City = "Hope Mills", Street = "1915 Teesdale Drive", Zip = "28348-0000" }
+                    );
+            });
+
+            modelBuilder.Entity<CustomerPhone>(x =>
+            {
+                x.HasData(
+                    new CustomerPhone() { Id = 1, Number = "574-367-1006", Type = PhoneType.Mobile }
+                    );
+            });
+
+            modelBuilder.Entity<Employee>(x =>
+            {
+                x.HasData(
+                    new Employee() { Id = 1, First = "Patrick", Middle = "", Last = "Larson", Position = Position.Manager, EmployeeAddressId = 1, EmployeePhoneId = 1 }
+                    );
+            });
+
+            modelBuilder.Entity<EmployeeAddress>(x =>
+            {
+                x.HasData(
+                    new EmployeeAddress() { Id = 1, Street = "305 S. 29th Street", City = "South Bend", State = "Indiana", Zip = "46514-0000" });
+            });
+
+            modelBuilder.Entity<EmployeePhone>(x =>
+            {
+                x.HasData(
+                    new EmployeePhone() { Id = 1, Number = "219-872-4312", Type = PhoneType.Office });
+            });
+
+            modelBuilder.Entity<EquipmentType>(x =>
+            {
+                x.HasData(
+                    new EquipmentType() { Id = 1, Type = "Guitar" });
+            });
+
+            modelBuilder.Entity<Brand>(x =>
+            {
+                x.HasData(
+                    new Brand() { Id = 1, Name = "Fender" });
+            });
+
+            modelBuilder.Entity<Model>(x =>
+            {
+                x.HasData(
+                    new Model() { Id = 1, BrandId = 1, Name = "Stratocaster" });
+            });
+
+            modelBuilder.Entity<Equipment>(x =>
+            {
+                x.HasData(
+                    new Equipment() { Id = 1, BrandId = 1, ModelId = 1, EquipmentTypeId = 1, Condition = Condition.New });
+            });
+        }
     }
 }
+

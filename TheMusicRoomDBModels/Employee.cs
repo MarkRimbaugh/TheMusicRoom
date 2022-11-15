@@ -24,5 +24,9 @@ namespace TheMusicRoomDBModels
         public int EmployeeAddressId { get; set; }
         [Required]
         public int EmployeePhoneId { get; set; }
+
+        public virtual EmployeeAddress Address { get; set; }
+        public virtual EmployeePhone Phone { get; set; }
+
     }
 }
