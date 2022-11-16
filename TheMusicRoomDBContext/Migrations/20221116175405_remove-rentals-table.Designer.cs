@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheMusicRoomDB;
 
@@ -11,9 +12,11 @@ using TheMusicRoomDB;
 namespace TheMusicRoomDB.Migrations
 {
     [DbContext(typeof(TheMusicRoomDBContext))]
-    partial class TheMusicRoomDBContextModelSnapshot : ModelSnapshot
+    [Migration("20221116175405_remove-rentals-table")]
+    partial class removerentalstable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,9 +108,8 @@ namespace TheMusicRoomDB.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("AddressId")
+                        .HasColumnType("int");
 
                     b.Property<string>("First")
                         .IsRequired()
@@ -124,23 +126,14 @@ namespace TheMusicRoomDB.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Zip")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("PhoneId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
+
+                    b.HasIndex("PhoneId");
 
                     b.ToTable("Customers");
 
@@ -148,11 +141,86 @@ namespace TheMusicRoomDB.Migrations
                         new
                         {
                             Id = 1,
-                            City = "Hope Mills",
+                            AddressId = 1,
                             First = "Mark",
                             Last = "Rimbaugh",
                             Middle = "",
-                            PhoneNumber = "123-456-7890",
+                            PhoneId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AddressId = 2,
+                            First = "Joshua",
+                            Last = "Benson",
+                            Middle = "",
+                            PhoneId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AddressId = 3,
+                            First = "Drew",
+                            Last = "Nelson",
+                            Middle = "",
+                            PhoneId = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AddressId = 4,
+                            First = "Rico",
+                            Last = "Rodriguez",
+                            Middle = "",
+                            PhoneId = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            AddressId = 5,
+                            First = "Jackson",
+                            Last = "Freiburg",
+                            Middle = "",
+                            PhoneId = 5
+                        });
+                });
+
+            modelBuilder.Entity("TheMusicRoomDBModels.CustomerAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Zip")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CustomerAddresses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            City = "Hope Mills",
                             State = "North Carolina",
                             Street = "892 Some Road",
                             Zip = "12345-0000"
@@ -161,10 +229,6 @@ namespace TheMusicRoomDB.Migrations
                         {
                             Id = 2,
                             City = "Fayetteville",
-                            First = "Joshua",
-                            Last = "Benson",
-                            Middle = "",
-                            PhoneNumber = "234-567-8901",
                             State = "North Carolina",
                             Street = "429 That Avenue",
                             Zip = "67891-0000"
@@ -173,10 +237,6 @@ namespace TheMusicRoomDB.Migrations
                         {
                             Id = 3,
                             City = "South Bend",
-                            First = "Drew",
-                            Last = "Nelson",
-                            Middle = "",
-                            PhoneNumber = "345-678-9012",
                             State = "Indiana",
                             Street = "403 S. 29th Street",
                             Zip = "89172-0000"
@@ -185,10 +245,6 @@ namespace TheMusicRoomDB.Migrations
                         {
                             Id = 4,
                             City = "Anchorage",
-                            First = "Rico",
-                            Last = "Rodriguez",
-                            Middle = "",
-                            PhoneNumber = "456-789-0123",
                             State = "Alaska",
                             Street = "123 Fake Street",
                             Zip = "68981-0000"
@@ -197,13 +253,61 @@ namespace TheMusicRoomDB.Migrations
                         {
                             Id = 5,
                             City = "Leesville",
-                            First = "Jackson",
-                            Last = "Freiburg",
-                            Middle = "",
-                            PhoneNumber = "567-890-1234",
                             State = "Louisiana",
                             Street = "456 Another Street",
                             Zip = "01597-0000"
+                        });
+                });
+
+            modelBuilder.Entity("TheMusicRoomDBModels.CustomerPhone", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CustomerPhones");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Number = "123-456-7890",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Number = "234-567-8901",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Number = "345-678-9012",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Number = "456-789-0123",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Number = "567-890-1234",
+                            Type = 2
                         });
                 });
 
@@ -327,9 +431,11 @@ namespace TheMusicRoomDB.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("EmployeeAddressId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeePhoneId")
+                        .HasColumnType("int");
 
                     b.Property<string>("First")
                         .IsRequired()
@@ -346,26 +452,14 @@ namespace TheMusicRoomDB.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Position")
                         .HasColumnType("int");
 
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Zip")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("EmployeeAddressId");
+
+                    b.HasIndex("EmployeePhoneId");
 
                     b.ToTable("Employees");
 
@@ -373,67 +467,52 @@ namespace TheMusicRoomDB.Migrations
                         new
                         {
                             Id = 1,
-                            City = "Fayetteville",
+                            EmployeeAddressId = 1,
+                            EmployeePhoneId = 1,
                             First = "Brian",
                             Last = "Gorman",
                             Middle = "",
-                            PhoneNumber = "123-456-7890",
-                            Position = 0,
-                            State = "North Carolina",
-                            Street = "123 Sample Street",
-                            Zip = "46514-0000"
+                            Position = 0
                         },
                         new
                         {
                             Id = 2,
-                            City = "Fayetteville",
+                            EmployeeAddressId = 2,
+                            EmployeePhoneId = 2,
                             First = "Patrick",
                             Last = "Larson",
                             Middle = "",
-                            PhoneNumber = "234-567-8901",
-                            Position = 1,
-                            State = "North Carolina",
-                            Street = "249 MadeUp Road",
-                            Zip = "46514-0000"
+                            Position = 1
                         },
                         new
                         {
                             Id = 3,
-                            City = "Raeford",
+                            EmployeeAddressId = 3,
+                            EmployeePhoneId = 3,
                             First = "Ahmad",
                             Last = "Qaderyan",
                             Middle = "Rohin",
-                            PhoneNumber = "345-678-9012",
-                            Position = 1,
-                            State = "North Carolina",
-                            Street = "903 Imaginary Circle",
-                            Zip = "46514-0000"
+                            Position = 1
                         },
                         new
                         {
                             Id = 4,
-                            City = "Sanford",
+                            EmployeeAddressId = 4,
+                            EmployeePhoneId = 4,
                             First = "Mursal",
                             Last = "Qaderyan",
                             Middle = "",
-                            PhoneNumber = "456-789-0123",
-                            Position = 1,
-                            State = "North Carolina",
-                            Street = "191 Nonexistent Lane",
-                            Zip = "46514-0000"
+                            Position = 1
                         },
                         new
                         {
                             Id = 5,
-                            City = "Southern Pines",
+                            EmployeeAddressId = 5,
+                            EmployeePhoneId = 5,
                             First = "Alex",
                             Last = "Robinson",
                             Middle = "",
-                            PhoneNumber = "567-890-1234",
-                            Position = 1,
-                            State = "North Carolina",
-                            Street = "902 Fake Street",
-                            Zip = "46514-0000"
+                            Position = 1
                         });
                 });
 
@@ -467,6 +546,100 @@ namespace TheMusicRoomDB.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EmployeeAddresses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            City = "Fayetteville",
+                            State = "North Carolina",
+                            Street = "123 Sample Street",
+                            Zip = "46514-0000"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            City = "Fayetteville",
+                            State = "North Carolina",
+                            Street = "249 MadeUp Road",
+                            Zip = "46514-0000"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            City = "Raeford",
+                            State = "North Carolina",
+                            Street = "903 Imaginary Circle",
+                            Zip = "46514-0000"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            City = "Sanford",
+                            State = "North Carolina",
+                            Street = "191 Nonexistent Lane",
+                            Zip = "46514-0000"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            City = "Southern Pines",
+                            State = "North Carolina",
+                            Street = "902 Fake Street",
+                            Zip = "46514-0000"
+                        });
+                });
+
+            modelBuilder.Entity("TheMusicRoomDBModels.EmployeePhone", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmployeePhones");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Number = "123-456-7890",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Number = "234-567-8901",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Number = "345-678-9012",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Number = "456-789-0123",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Number = "567-890-1234",
+                            Type = 1
+                        });
                 });
 
             modelBuilder.Entity("TheMusicRoomDBModels.Equipment", b =>
@@ -733,6 +906,44 @@ namespace TheMusicRoomDB.Migrations
                         .HasForeignKey("RentalsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("TheMusicRoomDBModels.Customer", b =>
+                {
+                    b.HasOne("TheMusicRoomDBModels.CustomerAddress", "Address")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheMusicRoomDBModels.CustomerPhone", "Phone")
+                        .WithMany()
+                        .HasForeignKey("PhoneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Address");
+
+                    b.Navigation("Phone");
+                });
+
+            modelBuilder.Entity("TheMusicRoomDBModels.Employee", b =>
+                {
+                    b.HasOne("TheMusicRoomDBModels.EmployeeAddress", "Address")
+                        .WithMany()
+                        .HasForeignKey("EmployeeAddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TheMusicRoomDBModels.EmployeePhone", "Phone")
+                        .WithMany()
+                        .HasForeignKey("EmployeePhoneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Address");
+
+                    b.Navigation("Phone");
                 });
 
             modelBuilder.Entity("TheMusicRoomDBModels.Equipment", b =>

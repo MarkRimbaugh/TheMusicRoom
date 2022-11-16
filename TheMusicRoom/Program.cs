@@ -2,6 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
 using System.Diagnostics.Metrics;
+using System.IO;
+using System.Numerics;
+using System.Resources;
 using System.Security.Cryptography.X509Certificates;
 using TheMusicRoomDB;
 using TheMusicRoomDBModels;
@@ -11,7 +14,7 @@ namespace TheMusicRoom
 {
     public class Program
     {
-        static IConfigurationBuilder builder = new ConfigurationBuilder()
+        public static IConfigurationBuilder builder = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
         public static IConfigurationRoot _configuration = builder.Build();
         public static readonly string _cnstr = _configuration["ConnectionStrings:TheMusicRoomDB"];
@@ -24,57 +27,9 @@ namespace TheMusicRoom
             _configuration = builder.Build();
             
             MainMenu();
-
-        }
-        public static int GetValidInput(int max)
-        {
-            bool validInput = false;
-            int selection = 0;
-            while (!validInput)
-            {
-                Console.Write("\nYour selection: ");
-                string input = Console.ReadLine();
-                validInput = Int32.TryParse(input, out selection) && (selection > 0 && selection <= max);
-                if (!validInput)
-                {
-                    Console.WriteLine("Bad input, please try again");
-                    continue;
-                }
-            }
-            return selection;
         }
 
-        
-        
-        private static void MainMenu()
-        {
-            Console.WriteLine(new string('*', 35));
-            Console.WriteLine("Welcome to the Music Room!");
-            Console.WriteLine("\nWhat would you like to do?");
-            Console.WriteLine("1. Browse our instruments");
-            Console.WriteLine("2. Rent an instrument");
-            Console.WriteLine("3. Return an instrument");
-            Console.WriteLine("4. Quit");
-            Console.WriteLine(new string('*', 35));
-            int selection = GetValidInput(4);
-            if (selection == 4) return;
-            switch (selection)
-            {
-                case 1:
-                    ListInstruments();
-                    break;
-                case 2:
-                    RentInstrument();
-                    break;
-                case 3:
-                    ReturnInstrument();
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private static void ReturnInstrument()
+        public static void ReturnInstrument()
         {
             using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
             {
@@ -101,8 +56,9 @@ namespace TheMusicRoom
                 {
                     var rentalReturn = context.EquipmentRental.SingleOrDefault(x => x.Id == choice);
                     context.Remove(rentalReturn);
-                    context.SaveChanges();
                     context.Equipment.SingleOrDefault(x => x.Id == selectedEquipmentId).IsAvailable = true;
+                    context.SaveChanges();
+
                     Console.WriteLine("\nReturn was successful!");
                 }
 
@@ -112,6 +68,191 @@ namespace TheMusicRoom
                     Console.WriteLine("Transaction canceled, returning to main menu");
                     MainMenu();
                 }
+            }
+        }
+
+        private static bool ValidateChoice()
+        {
+            bool confirmed = false;
+            Console.Write("Continue? y/n -> ");
+
+            while (!confirmed)
+            {
+                string input = Console.ReadLine().ToLower();
+
+                if (input == "y")
+                {
+                    return true;
+                }
+                else if (input == "n")
+                {
+                    return false;
+                }
+                else
+                {
+                    Console.Write("Please enter y or n -> ");
+                }
+            }
+            return false;
+        }
+        private static void MainMenu()
+        {
+            Console.WriteLine(new string('*', 35));
+            Console.WriteLine("Welcome to the Music Room!");
+            Console.WriteLine("\nWhat would you like to do?");
+            Console.WriteLine("1. Browse our instruments");
+            Console.WriteLine("2. Rent an instrument");
+            Console.WriteLine("3. Return an instrument");
+            Console.WriteLine("4. Add new customer");
+            Console.WriteLine("5. Modify a customer");
+            Console.WriteLine("6. Add or edit employee");
+            Console.WriteLine("7. Quit");
+            Console.WriteLine(new string('*', 35));
+            int selection = GetValidInput(7);
+            if (selection == 7) return;
+            switch (selection)
+            {
+                case 1:
+                    ListInstruments();
+                    break;
+                case 2:
+                    RentInstrument();
+                    break;
+                case 3:
+                    ReturnInstrument();
+                    break;
+                case 4:
+                    AddNewCustomer();
+                    break;
+                case 5:
+                    EditCustomer();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static void EditCustomer()
+        {
+            using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
+            {
+                var customerList = context.Customers.ToList();
+                foreach (var c in customerList)
+                {
+                    Console.WriteLine($"Id: {c.Id} | Name: {c.Last}, {c.First} | Street: {c.Street} | City: {c.City} | State: {c.State} | Phone: {c.PhoneNumber}");
+                }
+                Console.WriteLine("\nChoose a customer to modify by Id:");
+                int choice = GetValidInput(customerList.Max(x => x.Id));
+                var selectedCustomer = context.Customers.SingleOrDefault(x => x.Id == choice);
+                Console.WriteLine("What do you want to update?");
+                Console.WriteLine("1. First name");
+                Console.WriteLine("2. Middle name");
+                Console.WriteLine("3. Last name");
+                Console.WriteLine("4. Street");
+                Console.WriteLine("5. City");
+                Console.WriteLine("6. State");
+                Console.WriteLine("7. Phone");
+                choice = GetValidInput(7);
+                string newData = string.Empty;
+                switch (choice)
+                {
+                    case 1:
+                        Console.WriteLine($"Current first name -> {selectedCustomer.First}");
+                        Console.Write($"What is the new first name? -> ");
+                        newData = Console.ReadLine();
+                        selectedCustomer.First = newData;
+                        context.SaveChanges();
+                        Console.WriteLine("\nCustomer successfully modified! Returning to main menu");
+                        break;
+                    case 2:
+                        Console.WriteLine($"Current middle name -> {selectedCustomer.Middle}");
+                        Console.Write($"What is the new middle name? -> ");
+                        newData = Console.ReadLine();
+                        selectedCustomer.Middle = newData;
+                        context.SaveChanges();
+                        Console.WriteLine("\nCustomer successfully modified! Returning to main menu");
+                        break;
+                    case 3:
+                        Console.WriteLine($"Current last name -> {selectedCustomer.Last}");
+                        Console.Write($"What is the new last name? -> ");
+                        newData = Console.ReadLine();
+                        selectedCustomer.Last = newData;
+                        context.SaveChanges();
+                        Console.WriteLine("\nCustomer successfully modified! Returning to main menu");
+                        break;
+                    case 4:
+                        Console.WriteLine($"Current street address -> {selectedCustomer.Street}");
+                        Console.Write($"What is the new street address? -> ");
+                        newData = Console.ReadLine();
+                        selectedCustomer.Street = newData;
+                        context.SaveChanges();
+                        Console.WriteLine("\nCustomer successfully modified! Returning to main menu");
+                        break;
+                    case 5:
+                        Console.WriteLine($"Current city -> {selectedCustomer.City}");
+                        Console.Write($"What is the new city? -> ");
+                        newData = Console.ReadLine();
+                        selectedCustomer.City = newData;
+                        context.SaveChanges();
+                        Console.WriteLine("\nCustomer successfully modified! Returning to main menu");
+                        break;
+                    case 6:
+                        Console.WriteLine($"Current state -> {selectedCustomer.State}");
+                        Console.Write($"What is the new state? -> ");
+                        newData = Console.ReadLine();
+                        selectedCustomer.State = newData;
+                        context.SaveChanges();
+                        Console.WriteLine("\nCustomer successfully modified! Returning to main menu");
+                        break;
+                    case 7:
+                        Console.WriteLine($"Current phone number -> {selectedCustomer.PhoneNumber}");
+                        Console.Write($"What is the new phone number? -> ");
+                        newData = Console.ReadLine();
+                        selectedCustomer.PhoneNumber = newData;
+                        context.SaveChanges();
+                        Console.WriteLine("\nCustomer successfully modified! Returning to main menu");
+                        break;
+                }
+                MainMenu();
+            }
+        }
+
+        public static void AddNewCustomer()
+        {
+            using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
+            {
+                Console.WriteLine(new string('*', 35));
+                Console.WriteLine("Enter new customer information:");
+                Console.Write("Last Name -> ");
+                string lastName = Console.ReadLine();
+                Console.Write("FirstName -> ");
+                string firstName = Console.ReadLine();
+                Console.Write("Middle name -> ");
+                string middleName = Console.ReadLine();
+                Console.Write("Street -> ");
+                string street = Console.ReadLine();
+                Console.Write("City -> ");
+                string city = Console.ReadLine();
+                Console.Write("State -> ");
+                string state = Console.ReadLine();
+                Console.Write("Zip -> ");
+                string zip = Console.ReadLine();
+                Console.Write("Phone -> ");
+                string phone = Console.ReadLine();
+                var newCustomer = new Customer(firstName, middleName, lastName, street, city, state, zip, phone);
+
+                Console.Write($"{firstName} {middleName} {lastName}, Address: {street} {city}, {state}, Phone: {phone}. Add this customer? y/n");
+                bool choice = ValidateChoice();
+                if (!choice)
+                {
+                    Console.WriteLine("\nAction canceled, returning to main menu.");
+                    MainMenu();
+                }
+
+                context.Customers.Add(newCustomer);
+                context.SaveChanges();
+                Console.WriteLine("Cusomer succesfully added! Returning to main menu");
+                MainMenu();
             }
         }
 
@@ -177,7 +318,7 @@ namespace TheMusicRoom
                 bool confirmRental = ValidateChoice();
 
                 // if yes, add rental transaction and set the equipment availability to false
-                if(confirmRental)
+                if (confirmRental)
                 {
                     var rental = new EquipmentRental(selectedCustomerId, selectedEmployeeId, selectedEquipmentId);
                     context.Equipment.SingleOrDefault(x => x.Id == selectedEquipmentId).IsAvailable = false;
@@ -192,7 +333,24 @@ namespace TheMusicRoom
                 MainMenu();
             }
         }
-        
+
+        public static int GetValidInput(int max)
+        {
+            bool validInput = false;
+            int selection = 0;
+            while (!validInput)
+            {
+                Console.Write("\nYour selection: ");
+                string input = Console.ReadLine();
+                validInput = Int32.TryParse(input, out selection) && (selection > 0 && selection <= max);
+                if (!validInput)
+                {
+                    Console.WriteLine("Bad input, please try again");
+                    continue;
+                }
+            }
+            return selection;
+        }
 
         public static void ListInstruments()
         {
@@ -215,38 +373,11 @@ namespace TheMusicRoom
                     Console.WriteLine(new string('*', 50));
                     foreach (var item in equipmentList)
                     {
-                        Console.WriteLine($"{item.Type} | {item.Brand} | {item.Model} | Condition: {(Condition)item.Condition}");
+                        Console.WriteLine($"{item.Type} | {item.Brand} | {item.Model} | Condition: {(Condition)item.Condition} | Available: {item.IsAvailable}");
                     }
                     Console.WriteLine(new string('*', 50));
                 }
             }
         }
-        
-       
-        private static bool ValidateChoice()
-        {
-            bool confirmed = false;
-            Console.Write("Continue? y/n -> ");
-
-            while (!confirmed)
-            {
-                string input = Console.ReadLine().ToLower();
-
-                if (input == "y")
-                {
-                    return true;
-                }
-                else if (input == "n")
-                {
-                    return false;
-                }
-                else
-                {
-                    Console.Write("Please enter y or n -> ");
-                }
-            }
-            return false;
-        }
-        
     }
 }

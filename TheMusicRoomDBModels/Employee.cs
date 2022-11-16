@@ -20,13 +20,18 @@ namespace TheMusicRoomDBModels
         [Required, StringLength(20)]
         public string Last { get; set; }
         public Position Position { get; set; }
-        [Required]
-        public int EmployeeAddressId { get; set; }
-        [Required]
-        public int EmployeePhoneId { get; set; }
+        public string Street { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Zip { get; set; }
+        public string PhoneNumber { get; set; }
+        //[Required]
+        //public int EmployeeAddressId { get; set; }
+        //[Required]
+        //public int EmployeePhoneId { get; set; }
 
-        public virtual EmployeeAddress Address { get; set; }
-        public virtual EmployeePhone Phone { get; set; }
+        //public virtual EmployeeAddress Address { get; set; }
+        //public virtual EmployeePhone Phone { get; set; }
 
         
 

@@ -17,13 +17,31 @@ namespace TheMusicRoomDBModels
         public string Middle { get; set; }
         [Required, StringLength(30)]
         public string Last { get; set; }
-        [Required]
-        public int AddressId { get; set; }
-        [Required]
-        public int PhoneId { get; set; }
+        public string Street { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Zip { get; set; }
+        public string PhoneNumber { get; set; }
 
-        public virtual CustomerAddress Address { get; set; }
-        public virtual CustomerPhone Phone { get; set; }
+        public Customer()
+        {
+
+        }
+
+        public Customer(string first, string middle, string last, string street, string city, string state, string zip, string phone)
+        {
+            First = first;
+            Middle = middle;
+            Last = last;
+            Street = street;
+            City = city;
+            State = state;
+            Zip = zip;
+            PhoneNumber = phone;
+        }
+
+        //public virtual CustomerAddress Address { get; set; }
+        //public virtual CustomerPhone Phone { get; set; }
 
         public virtual List<Rental> Rentals { get; set; }
 
