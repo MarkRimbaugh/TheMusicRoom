@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheMusicRoomDB;
 
@@ -11,9 +12,11 @@ using TheMusicRoomDB;
 namespace TheMusicRoomDB.Migrations
 {
     [DbContext(typeof(TheMusicRoomDBContext))]
-    partial class TheMusicRoomDBContextModelSnapshot : ModelSnapshot
+    [Migration("20221115215113_create-equipment-list-view")]
+    partial class createequipmentlistview
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,21 +24,6 @@ namespace TheMusicRoomDB.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("CustomerRental", b =>
-                {
-                    b.Property<int>("CustomersId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RentalsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CustomersId", "RentalsId");
-
-                    b.HasIndex("RentalsId");
-
-                    b.ToTable("CustomerRental");
-                });
 
             modelBuilder.Entity("TheMusicRoomDBModels.Brand", b =>
                 {
@@ -325,9 +313,6 @@ namespace TheMusicRoomDB.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("TypeId")
-                        .HasColumnType("int");
-
                     b.ToTable((string)null);
 
                     b.ToView("CourseInfoDTOs", (string)null);
@@ -571,7 +556,8 @@ namespace TheMusicRoomDB.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EquipmentTypeId");
+                    b.HasIndex("EquipmentTypeId")
+                        .IsUnique();
 
                     b.HasIndex("ModelId");
 
@@ -770,46 +756,6 @@ namespace TheMusicRoomDB.Migrations
                         });
                 });
 
-            modelBuilder.Entity("TheMusicRoomDBModels.Rental", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("EquipmentId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("RentDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Rental");
-                });
-
-            modelBuilder.Entity("CustomerRental", b =>
-                {
-                    b.HasOne("TheMusicRoomDBModels.Customer", null)
-                        .WithMany()
-                        .HasForeignKey("CustomersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TheMusicRoomDBModels.Rental", null)
-                        .WithMany()
-                        .HasForeignKey("RentalsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("TheMusicRoomDBModels.Customer", b =>
                 {
                     b.HasOne("TheMusicRoomDBModels.CustomerAddress", "Address")
@@ -851,8 +797,8 @@ namespace TheMusicRoomDB.Migrations
             modelBuilder.Entity("TheMusicRoomDBModels.Equipment", b =>
                 {
                     b.HasOne("TheMusicRoomDBModels.EquipmentType", "Type")
-                        .WithMany()
-                        .HasForeignKey("EquipmentTypeId")
+                        .WithOne("Equipment")
+                        .HasForeignKey("TheMusicRoomDBModels.Equipment", "EquipmentTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -870,19 +816,19 @@ namespace TheMusicRoomDB.Migrations
             modelBuilder.Entity("TheMusicRoomDBModels.EquipmentRental", b =>
                 {
                     b.HasOne("TheMusicRoomDBModels.Customer", "Customer")
-                        .WithMany()
+                        .WithMany("EquipmentRentals")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheMusicRoomDBModels.Employee", "Employee")
-                        .WithMany()
+                        .WithMany("EquipmentRentals")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheMusicRoomDBModels.Equipment", "Equipment")
-                        .WithMany("EquipmentRentals")
+                        .WithMany()
                         .HasForeignKey("EquipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -894,9 +840,20 @@ namespace TheMusicRoomDB.Migrations
                     b.Navigation("Equipment");
                 });
 
-            modelBuilder.Entity("TheMusicRoomDBModels.Equipment", b =>
+            modelBuilder.Entity("TheMusicRoomDBModels.Customer", b =>
                 {
                     b.Navigation("EquipmentRentals");
+                });
+
+            modelBuilder.Entity("TheMusicRoomDBModels.Employee", b =>
+                {
+                    b.Navigation("EquipmentRentals");
+                });
+
+            modelBuilder.Entity("TheMusicRoomDBModels.EquipmentType", b =>
+                {
+                    b.Navigation("Equipment")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

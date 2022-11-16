@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TheMusicRoomDBModels;
+using TheMusicRoomDBModels.DTOs;
 
 namespace TheMusicRoomDB
 {
@@ -18,6 +19,11 @@ namespace TheMusicRoomDB
         public DbSet<EmployeePhone> EmployeePhones { get; set; }
         public DbSet<EmployeeAddress> EmployeeAddresses { get; set; }
 
+        public DbSet<Rental> Rentals { get; set; }
+
+        // Data Transfer Objects
+        public DbSet<EquipmentListDTO> EquipmentListDTOs { get; set; }
+        public DbSet<CustomerListDTO> CustomerListDTOs { get; set; }
 
         public TheMusicRoomDBContext() { }
 
@@ -149,6 +155,12 @@ namespace TheMusicRoomDB
                     new Equipment() { Id = 3, ModelId = 7, EquipmentTypeId = 2, Condition = Condition.Good},
                     new Equipment() { Id = 4, ModelId = 8, EquipmentTypeId = 3, Condition = Condition.Fair},
                     new Equipment() { Id = 5, ModelId = 10, EquipmentTypeId = 2, Condition = Condition.Unknown});
+            });
+
+            modelBuilder.Entity<EquipmentListDTO>(x =>
+            {
+                x.HasNoKey(); // <- this is not a table so it has no key
+                x.ToView("CourseInfoDTOs"); // <- same as what was assigned as the variable name above
             });
         }
     }

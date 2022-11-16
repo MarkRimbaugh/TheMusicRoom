@@ -15,8 +15,7 @@ namespace TheMusicRoomDBModels
         public int Id { get; set; }
         [Required]
         public int EquipmentTypeId { get; set; }
-        [Required]
-        public int BrandId { get; set; }
+        
         [Required]
         public int ModelId { get; set; }
         [Required]
@@ -24,5 +23,8 @@ namespace TheMusicRoomDBModels
 
         public virtual EquipmentType Type { get; set; }
         public virtual Model Model { get; set; }
+
+        public virtual List<EquipmentRental> EquipmentRentals { get; set; } = new List<EquipmentRental>();
+
     }
 }

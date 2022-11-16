@@ -9,5 +9,9 @@ namespace TheMusicRoomDBModels
         [Required, StringLength(30)]
         public string Type { get; set; }
 
+        
+
+        
+
     }
 }
