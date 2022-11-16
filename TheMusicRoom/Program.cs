@@ -53,9 +53,11 @@ namespace TheMusicRoom
             Console.WriteLine("\nWhat would you like to do?");
             Console.WriteLine("1. Browse our instruments");
             Console.WriteLine("2. Rent an instrument");
-            Console.WriteLine("3. Manage customer data");
+            Console.WriteLine("3. Return an instrument");
+            Console.WriteLine("4. Quit");
             Console.WriteLine(new string('*', 35));
-            int selection = GetValidInput(3);
+            int selection = GetValidInput(4);
+            if (selection == 4) return;
             switch (selection)
             {
                 case 1:
@@ -65,10 +67,51 @@ namespace TheMusicRoom
                     RentInstrument();
                     break;
                 case 3:
-                    //ManageCustomerData();
+                    ReturnInstrument();
                     break;
                 default:
                     break;
+            }
+        }
+
+        private static void ReturnInstrument()
+        {
+            using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
+            {
+                var equipmentList = new List<RentedEquipmentDTO>(context.RentedEquipmentDTOs
+                    .FromSqlRaw("SELECT * FROM vwRentedEquipment").ToList());
+                Console.WriteLine(new string('*', 100));
+                foreach (var item in equipmentList)
+                {
+                    Console.WriteLine($"{item.Id} | {item.Model} | Rented to: {item.Customer} | On: {item.RentalDate.ToShortTimeString()}) | Due: {item.DueDate.ToShortDateString()}");
+                }
+                Console.WriteLine(new string('*', 100));
+                Console.Write("Choose an instrument to return by ID:");
+                var choice = GetValidInput(equipmentList.Max(x => x.Id));
+
+                var model = equipmentList.SingleOrDefault(x => x.Id == choice).Model;
+                var customer = equipmentList.SingleOrDefault(x => x.Id == choice).Customer;
+                var selectedEquipmentId = equipmentList.SingleOrDefault(x => x.Id == choice).EquipmentId;
+
+                Console.WriteLine($"{customer} is returning {model}. Is that correct?");
+                bool confirmed = ValidateChoice();
+
+                // if confirmed, set complete the rental and set the equipment availability to true
+                if (confirmed)
+                {
+                    var rentalReturn = context.EquipmentRental.SingleOrDefault(x => x.Id == choice);
+                    context.Remove(rentalReturn);
+                    context.SaveChanges();
+                    context.Equipment.SingleOrDefault(x => x.Id == selectedEquipmentId).IsAvailable = true;
+                    Console.WriteLine("\nReturn was successful!");
+                }
+
+                // otherwise, return to main menu
+                else
+                {
+                    Console.WriteLine("Transaction canceled, returning to main menu");
+                    MainMenu();
+                }
             }
         }
 
@@ -83,15 +126,70 @@ namespace TheMusicRoom
                 Console.WriteLine("4. Return to main menu");
                 int choice = GetValidInput(4);
                 if (choice == 4) return;
+
+                // Display instruments and prompt to select one for rent
                 var equipmentList = new List<EquipmentListDTO>(context.EquipmentListDTOs
                     .FromSqlRaw("SELECT * FROM vwEquipmentList WHERE TypeId = " + choice).ToList());
                 foreach (var item in equipmentList)
                 {
-                    Console.WriteLine($"{item.Type} | {item.Brand} | {item.Model} | Condition: {(Condition)item.Condition}");
+                    Console.WriteLine($"{item.Id} | {item.Type} | {item.Brand} | {item.Model} | Condition: {(Condition)item.Condition} | Available: {item.IsAvailable}");
                 }
-                Console.WriteLine(new string('*', 50));
-                Console.Write("Choose an instrument by ID -> ");
-                choice = GetValidInput(equipmentList.Count);
+                Console.WriteLine(new string('*', 75));
+                Console.Write("Choose an instrument by ID:");
+                choice = GetValidInput(equipmentList.Max(x => x.Id));
+                var selectedEquipmentId = choice;
+
+                // Ensure item is available. If so, proceed. Otherwise, return to main menu
+                if (context.Equipment.SingleOrDefault(x => x.Id == selectedEquipmentId).IsAvailable == false)
+                {
+                    Console.WriteLine("Sorry, that item is unavailable.");
+                    MainMenu();
+                }
+                // Display customers and prompt to select renter
+                var customerList = new List<CustomerListDTO>(context.CustomerListDTOs
+                    .FromSqlRaw("SELECT * FROM vwCustomerList").ToList());
+                foreach (var c in customerList)
+                {
+                    Console.WriteLine($"{c.Id} | {c.Name} | {c.Address} | {c.Phone}");
+                }
+                Console.Write("Select customer by ID:");
+                choice = GetValidInput(customerList.Max(x => x.Id));
+                var selectedCustomerId = choice;
+
+                // Display employees and prompt to select employee
+                var employeeList = new List<EmployeeListDTO>(context.EmployeeListDTOs
+                    .FromSqlRaw("SELECT * FROM vwEmployeeList").ToList());
+                foreach (var e in employeeList)
+                {
+                    Console.WriteLine($"{e.Id} | {e.Name} | {(Position)e.Position}");
+                }
+                Console.Write("Select employee by ID:");
+                choice = GetValidInput(employeeList.Max(x => x.Id));
+                var selectedEmployeeId = choice;
+
+                // Display a recap to the user and ask for validation
+                var customer = customerList.SingleOrDefault(x => x.Id == selectedCustomerId).Name;
+                var equipment = equipmentList.SingleOrDefault(x => x.Id == selectedEquipmentId).Model;
+                var employee = employeeList.SingleOrDefault(x => x.Id == selectedEmployeeId).Name;
+
+                Console.WriteLine($"{employee} will rent the following to {customer}: {equipment}. ");
+                Console.Write("Is this correct? y/n -> ");
+                bool confirmRental = ValidateChoice();
+
+                // if yes, add rental transaction and set the equipment availability to false
+                if(confirmRental)
+                {
+                    var rental = new EquipmentRental(selectedCustomerId, selectedEmployeeId, selectedEquipmentId);
+                    context.Equipment.SingleOrDefault(x => x.Id == selectedEquipmentId).IsAvailable = false;
+                    context.Add(rental);
+                    context.SaveChanges();
+
+                    Console.WriteLine("\nSuccess!");
+                    MainMenu();
+                }
+                // otherwise, return to main menu
+                Console.WriteLine("\nTransaction canceled, returning to main menu.");
+                MainMenu();
             }
         }
         
@@ -124,70 +222,7 @@ namespace TheMusicRoom
             }
         }
         
-        
-
-        /*private static void RentInstrument()
-        {
-            using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
-            {
-                var customerList = context.Customers.ToList();
-                foreach (var customer in customerList)
-                {
-                    Console.WriteLine(customer);
-                }
-                Console.Write("\nChoose a customer by ID:");
-
-                int selection = GetValidInput(customerList.Count);
-                var selectedCustomer = context.Customers.SingleOrDefault(customer => customer.Id == selection);
-
-                Console.WriteLine("What kind of instrument do you want?");
-                Console.WriteLine("1. Guitar");
-                Console.WriteLine("2. Keyboard");
-                Console.WriteLine("3. Drums");
-                selection = GetValidInput(3);
-                Equipment selectedEquipment = null;
-                switch (selection)
-                {
-                    case 1:
-                        var equipmentList = context.Equipment.ToList();
-                        foreach (var instrument in equipmentList)
-                        {
-                            Console.WriteLine(instrument);
-                        }
-                        Console.Write("\nChoose an instrument by ID");
-                        selection = GetValidInput(equipmentList.Count);
-                        selectedEquipment = context.Equipment.SingleOrDefault(x => x.Id == selection);
-                        break;
-                }
-                Console.WriteLine("Selected customer: " + selectedCustomer);
-                Console.WriteLine("Selected instrument: " + selectedEquipment);
-
-                bool confirmed = ValidateChoice();
-                if (confirmed)
-                {
-                    CompleteRentalTransaction(context, selectedCustomer, selectedInstrument, confirmed);
-                }
-                else
-                {
-                    Console.WriteLine("\nTransaction canceled, returning to main menu.");
-                    MainMenu();
-                }
-            }
-        }*/
-        /*private static void CompleteRentalTransaction(MusicRoomDBContext context, Customer selectedCustomer, Instrument selectedInstrument, bool confirmed)
-        {
-            // create association
-
-            var rental = context.EquipmentRentals;
-
-            EquipmentRental equipmentRental = new EquipmentRental();
-            equipmentRental.CustomerId = selectedCustomer.Id;
-            equipmentRental.InstrumentId = selectedInstrument.Id;
-            rental.Add(equipmentRental);
-
-            context.SaveChanges();
-
-        }*/
+       
         private static bool ValidateChoice()
         {
             bool confirmed = false;

@@ -24,5 +24,17 @@ namespace TheMusicRoomDBModels
         public virtual Employee Employee { get; set; }
         public virtual Equipment Equipment { get; set; }
 
+        public EquipmentRental()
+        {
+
+        }
+
+        public EquipmentRental(int customerId, int employeeId, int equipmentId)
+        {
+            CustomerId = customerId;
+            EmployeeId = employeeId;
+            EquipmentId = equipmentId;
+            RentalDate = DateTime.Now;
+        }
     }
 }

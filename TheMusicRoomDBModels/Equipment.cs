@@ -20,6 +20,7 @@ namespace TheMusicRoomDBModels
         public int ModelId { get; set; }
         [Required]
         public Condition Condition { get; set; }
+        public bool IsAvailable { get; set; } = true;
 
         public virtual EquipmentType Type { get; set; }
         public virtual Model Model { get; set; }

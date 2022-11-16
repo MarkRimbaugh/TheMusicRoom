@@ -22,16 +22,13 @@ namespace TheMusicRoomDBModels
 
         public Rental() { }
 
-        public Rental(int id, int equipmentId, int customerId, int employeeId)
+        public Rental(int equipmentId, int customerId, int employeeId)
         {
-            Id = id;
+            
             EquipmentId = equipmentId;
             CustomerId = customerId;
             EquipmentId = employeeId;
             RentDate = DateTime.Now;
         }
-
-        
-
     }
 }

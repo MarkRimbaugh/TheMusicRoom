@@ -18,12 +18,14 @@ namespace TheMusicRoomDB
         public DbSet<Employee> Employees { get; set; }
         public DbSet<EmployeePhone> EmployeePhones { get; set; }
         public DbSet<EmployeeAddress> EmployeeAddresses { get; set; }
-
         public DbSet<Rental> Rentals { get; set; }
+        public DbSet<EquipmentRental> EquipmentRental { get; set; }
 
         // Data Transfer Objects
         public DbSet<EquipmentListDTO> EquipmentListDTOs { get; set; }
         public DbSet<CustomerListDTO> CustomerListDTOs { get; set; }
+        public DbSet<EmployeeListDTO> EmployeeListDTOs { get; set; }
+        public DbSet<RentedEquipmentDTO> RentedEquipmentDTOs { get; set; }
 
         public TheMusicRoomDBContext() { }
 

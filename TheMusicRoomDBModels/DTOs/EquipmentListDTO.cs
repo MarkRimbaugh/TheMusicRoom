@@ -8,10 +8,18 @@ namespace TheMusicRoomDBModels.DTOs
 {
     public class EquipmentListDTO
     {
+        public int Id { get; set; }
         public int TypeId { get; set; }
         public string Type { get; set; }
         public string Model { get; set; }
         public string Brand { get; set; }
         public int Condition { get; set; }
+        public bool IsAvailable { get; set; }
+
+        
+
     }
+
+    
+
 }
