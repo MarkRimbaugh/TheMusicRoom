@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Numerics;
@@ -14,6 +15,7 @@ namespace TheMusicRoom
 {
     public class Program
     {
+        static int selection = 0;
         public static IConfigurationBuilder builder = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
         public static IConfigurationRoot _configuration = builder.Build();
@@ -36,36 +38,45 @@ namespace TheMusicRoom
                 var equipmentList = new List<RentedEquipmentDTO>(context.RentedEquipmentDTOs
                     .FromSqlRaw("SELECT * FROM vwRentedEquipment").ToList());
                 Console.WriteLine(new string('*', 100));
-                foreach (var item in equipmentList)
+                if (equipmentList.Count > 0)
                 {
-                    Console.WriteLine($"{item.Id} | {item.Model} | Rented to: {item.Customer} | On: {item.RentalDate.ToShortTimeString()}) | Due: {item.DueDate.ToShortDateString()}");
+                    foreach (var item in equipmentList)
+                    {
+                        Console.WriteLine($"{item.Id} | {item.Model} | Rented to: {item.Customer} | On: {item.RentalDate.ToShortTimeString()}) | Due: {item.DueDate.ToShortDateString()}");
+                    }
+                    Console.WriteLine(new string('*', 100));
+                    Console.Write("Choose an instrument to return by ID:");
+                    var choice = GetValidInput(equipmentList.Max(x => x.Id));
+
+                    var model = equipmentList.SingleOrDefault(x => x.Id == choice).Model;
+                    var customer = equipmentList.SingleOrDefault(x => x.Id == choice).Customer;
+                    var selectedEquipmentId = equipmentList.SingleOrDefault(x => x.Id == choice).EquipmentId;
+
+                    Console.WriteLine($"{customer} is returning {model}. Is that correct?");
+                    bool confirmed = ValidateChoice();
+
+                    // if confirmed, set complete the rental and set the equipment availability to true
+                    if (confirmed)
+                    {
+                        var rentalReturn = context.EquipmentRental.SingleOrDefault(x => x.Id == choice);
+                        context.Remove(rentalReturn);
+                        context.Equipment.SingleOrDefault(x => x.Id == selectedEquipmentId).IsAvailable = true;
+                        context.SaveChanges();
+
+                        Console.WriteLine("\nReturn was successful! Returning to the main menu");
+                        MainMenu();
+                    }
+
+                    // otherwise, return to main menu
+                    else
+                    {
+                        Console.WriteLine("Transaction canceled, returning to main menu");
+                        MainMenu();
+                    }
                 }
-                Console.WriteLine(new string('*', 100));
-                Console.Write("Choose an instrument to return by ID:");
-                var choice = GetValidInput(equipmentList.Max(x => x.Id));
-
-                var model = equipmentList.SingleOrDefault(x => x.Id == choice).Model;
-                var customer = equipmentList.SingleOrDefault(x => x.Id == choice).Customer;
-                var selectedEquipmentId = equipmentList.SingleOrDefault(x => x.Id == choice).EquipmentId;
-
-                Console.WriteLine($"{customer} is returning {model}. Is that correct?");
-                bool confirmed = ValidateChoice();
-
-                // if confirmed, set complete the rental and set the equipment availability to true
-                if (confirmed)
-                {
-                    var rentalReturn = context.EquipmentRental.SingleOrDefault(x => x.Id == choice);
-                    context.Remove(rentalReturn);
-                    context.Equipment.SingleOrDefault(x => x.Id == selectedEquipmentId).IsAvailable = true;
-                    context.SaveChanges();
-
-                    Console.WriteLine("\nReturn was successful!");
-                }
-
-                // otherwise, return to main menu
                 else
                 {
-                    Console.WriteLine("Transaction canceled, returning to main menu");
+                    Console.WriteLine("No equipment to return");
                     MainMenu();
                 }
             }
@@ -97,6 +108,37 @@ namespace TheMusicRoom
         }
         private static void MainMenu()
         {
+            while (selection != 7)
+            {
+                DisplayMainMenu();
+                selection = GetValidInput(7);
+                if (selection == 7) return;
+                switch (selection)
+                {
+                    case 1:
+                        ListInstruments();
+                        break;
+                    case 2:
+                        RentInstrument();
+                        break;
+                    case 3:
+                        ReturnInstrument();
+                        break;
+                    case 4:
+                        AddNewCustomer();
+                        break;
+                    case 5:
+                        EditCustomer();
+                        break;
+                    default:
+                        break;
+                }
+            };
+            
+        }
+
+        private static void DisplayMainMenu()
+        {
             Console.WriteLine(new string('*', 35));
             Console.WriteLine("Welcome to the Music Room!");
             Console.WriteLine("\nWhat would you like to do?");
@@ -108,28 +150,6 @@ namespace TheMusicRoom
             Console.WriteLine("6. Add or edit employee");
             Console.WriteLine("7. Quit");
             Console.WriteLine(new string('*', 35));
-            int selection = GetValidInput(7);
-            if (selection == 7) return;
-            switch (selection)
-            {
-                case 1:
-                    ListInstruments();
-                    break;
-                case 2:
-                    RentInstrument();
-                    break;
-                case 3:
-                    ReturnInstrument();
-                    break;
-                case 4:
-                    AddNewCustomer();
-                    break;
-                case 5:
-                    EditCustomer();
-                    break;
-                default:
-                    break;
-            }
         }
 
         private static void EditCustomer()
@@ -144,14 +164,7 @@ namespace TheMusicRoom
                 Console.WriteLine("\nChoose a customer to modify by Id:");
                 int choice = GetValidInput(customerList.Max(x => x.Id));
                 var selectedCustomer = context.Customers.SingleOrDefault(x => x.Id == choice);
-                Console.WriteLine("What do you want to update?");
-                Console.WriteLine("1. First name");
-                Console.WriteLine("2. Middle name");
-                Console.WriteLine("3. Last name");
-                Console.WriteLine("4. Street");
-                Console.WriteLine("5. City");
-                Console.WriteLine("6. State");
-                Console.WriteLine("7. Phone");
+                DisplayUpdateMenu();
                 choice = GetValidInput(7);
                 string newData = string.Empty;
                 switch (choice)
@@ -217,6 +230,18 @@ namespace TheMusicRoom
             }
         }
 
+        private static void DisplayUpdateMenu()
+        {
+            Console.WriteLine("What do you want to update?");
+            Console.WriteLine("1. First name");
+            Console.WriteLine("2. Middle name");
+            Console.WriteLine("3. Last name");
+            Console.WriteLine("4. Street");
+            Console.WriteLine("5. City");
+            Console.WriteLine("6. State");
+            Console.WriteLine("7. Phone");
+        }
+
         public static void AddNewCustomer()
         {
             using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
@@ -251,7 +276,7 @@ namespace TheMusicRoom
 
                 context.Customers.Add(newCustomer);
                 context.SaveChanges();
-                Console.WriteLine("Cusomer succesfully added! Returning to main menu");
+                Console.WriteLine("Customer succesfully added! Returning to main menu");
                 MainMenu();
             }
         }
@@ -260,11 +285,7 @@ namespace TheMusicRoom
         {
             using (var context = new TheMusicRoomDBContext(_optionsBuilder.Options))
             {
-                Console.WriteLine("\nWhat type of instrument are you looking for?");
-                Console.WriteLine("1. Guitar");
-                Console.WriteLine("2. Keyboards");
-                Console.WriteLine("3. Drums");
-                Console.WriteLine("4. Return to main menu");
+                DisplayRentInstrumentMenu();
                 int choice = GetValidInput(4);
                 if (choice == 4) return;
 
@@ -313,8 +334,7 @@ namespace TheMusicRoom
                 var equipment = equipmentList.SingleOrDefault(x => x.Id == selectedEquipmentId).Model;
                 var employee = employeeList.SingleOrDefault(x => x.Id == selectedEmployeeId).Name;
 
-                Console.WriteLine($"{employee} will rent the following to {customer}: {equipment}. ");
-                Console.Write("Is this correct? y/n -> ");
+                Console.WriteLine($"{employee} will issue the following to {customer}: {equipment}. ");
                 bool confirmRental = ValidateChoice();
 
                 // if yes, add rental transaction and set the equipment availability to false
@@ -332,6 +352,15 @@ namespace TheMusicRoom
                 Console.WriteLine("\nTransaction canceled, returning to main menu.");
                 MainMenu();
             }
+        }
+
+        private static void DisplayRentInstrumentMenu()
+        {
+            Console.WriteLine("\nWhat type of instrument are you looking for?");
+            Console.WriteLine("1. Guitar");
+            Console.WriteLine("2. Keyboards");
+            Console.WriteLine("3. Drums");
+            Console.WriteLine("4. Return to main menu");
         }
 
         public static int GetValidInput(int max)

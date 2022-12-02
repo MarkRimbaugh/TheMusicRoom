@@ -13,10 +13,7 @@ namespace TheMusicRoomDB
         public DbSet<Model> Models { get; set; }
         public DbSet<Brand> Brands { get; set; }
         public DbSet<Customer> Customers { get; set; }
-        //public DbSet<CustomerPhone> CustomerPhones { get; set; }
-        //public DbSet<CustomerAddress> CustomerAddresses { get; set; }
         public DbSet<Employee> Employees { get; set; }
-        //public DbSet<EmployeePhone> EmployeePhones { get; set; }
         public DbSet<EmployeeAddress> EmployeeAddresses { get; set; }
         public DbSet<EquipmentRental> EquipmentRental { get; set; }
 
